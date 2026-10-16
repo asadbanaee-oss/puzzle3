@@ -1,5 +1,8 @@
 name: Build APK
 
+# Builds the Android APK in the cloud - nothing to install on your PC.
+# After the run, open the run page and download the "coloring-puzzle-apk" artifact.
+
 on:
   push:
     branches: [ main, master ]
@@ -9,11 +12,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-            - name: Check out the project
-        uses: actions/checkout@v5          # قبلاً v4 بود
+      - name: Check out the project
+        uses: actions/checkout@v5
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5        # قبلاً v4 بود
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
