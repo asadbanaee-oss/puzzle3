@@ -1,8 +1,5 @@
 name: Build APK
 
-# Builds the Android APK in the cloud - nothing to install on your PC.
-# After the run, open the run page and download the "coloring-puzzle-apk" artifact.
-
 on:
   push:
     branches: [ main, master ]
@@ -29,13 +26,45 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Build debug APK
-        run: gradle assembleDebug --no-daemon --stacktrace
-
-      - name: Rename the APK
+      - name: Find the Gradle project
+        id: prep
         run: |
+          set -e
+          echo "--- repository root ---"
+          ls -la
+
+          if [ -f settings.gradle ] || [ -f settings.gradle.kts ]; then
+            dir="."
+          else
+            if ! find . -maxdepth 4 -name settings.gradle -print -quit | grep -q .; then
+              z=$(find . -maxdepth 1 -name '*.zip' -print -quit)
+              if [ -n "$z" ]; then
+                echo "found archive $z - unzipping it"
+                unzip -q -o "$z" -d .
+              fi
+            fi
+            found=$(find . -maxdepth 4 -name settings.gradle -print -quit)
+            if [ -z "$found" ]; then
+              echo "::error::settings.gradle was not found anywhere. Upload the CONTENTS of the project (settings.gradle, build.gradle, gradle.properties, app/, README.md) to the repository root."
+              exit 1
+            fi
+            dir=$(dirname "$found")
+          fi
+
+          echo "using Gradle project directory: $dir"
+          ls -la "$dir"
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+
+      - name: Build debug APK
+        run: gradle -p "${{ steps.prep.outputs.dir }}" assembleDebug --no-daemon --stacktrace
+
+      - name: Collect the APK
+        run: |
+          set -e
+          d="${{ steps.prep.outputs.dir }}"
+          find "$d/app/build/outputs/apk" -name '*.apk' -print
           mkdir -p out
-          cp app/build/outputs/apk/debug/app-debug.apk out/coloring-puzzle.apk
+          cp "$d/app/build/outputs/apk/debug/app-debug.apk" out/coloring-puzzle.apk
           ls -lh out
 
       - name: Upload the APK
