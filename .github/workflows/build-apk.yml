@@ -30,8 +30,9 @@ jobs:
         id: prep
         run: |
           set -e
-          echo "--- repository root ---"
-          ls -la
+          mkdir -p out
+          echo "--- repository root ---" > out/build.log
+          ls -la | tee -a out/build.log
 
           if [ -f settings.gradle ] || [ -f settings.gradle.kts ]; then
             dir="."
@@ -39,26 +40,79 @@ jobs:
             if ! find . -maxdepth 4 -name settings.gradle -print -quit | grep -q .; then
               z=$(find . -maxdepth 1 -name '*.zip' -print -quit)
               if [ -n "$z" ]; then
-                echo "found archive $z - unzipping it"
+                echo "found archive $z - unzipping it" | tee -a out/build.log
                 unzip -q -o "$z" -d .
               fi
             fi
             found=$(find . -maxdepth 4 -name settings.gradle -print -quit)
             if [ -z "$found" ]; then
-              echo "::error::settings.gradle was not found anywhere. Upload the CONTENTS of the project (settings.gradle, build.gradle, gradle.properties, app/, README.md) to the repository root."
+              echo "::error::settings.gradle was not found anywhere."
+              echo "settings.gradle NOT FOUND - upload the CONTENTS of the project to the repository root" >> out/build.log
               exit 1
             fi
             dir=$(dirname "$found")
           fi
 
           echo "using Gradle project directory: $dir"
-          ls -la "$dir"
+          ls -la "$dir" | tee -a out/build.log
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
 
       - name: Build debug APK
-        run: gradle -p "${{ steps.prep.outputs.dir }}" assembleDebug --no-daemon --stacktrace
+        id: build
+        run: |
+          set -o pipefail
+          gradle -p "${{ steps.prep.outputs.dir }}" assembleDebug --no-daemon --stacktrace 2>&1 | tee -a out/build.log
+
+      - name: Write the report on the run page
+        if: always()
+        run: |
+          mkdir -p out
+          {
+            echo "## Coloring Puzzle - build report"
+            echo ""
+            if [ "${{ steps.build.outcome }}" = "success" ]; then
+              echo "**BUILD OK** - the APK is in the artifact \`coloring-puzzle-apk\`."
+            else
+              echo "**BUILD FAILED** - the reason is at the bottom of this page."
+            fi
+            echo ""
+            echo "### environment"
+            echo '```'
+            java -version 2>&1 | head -n 3
+            gradle --version 2>&1 | head -n 8
+            echo "ANDROID_HOME=$ANDROID_HOME"
+            ls "$ANDROID_HOME/platforms" 2>/dev/null
+            ls "$ANDROID_HOME/build-tools" 2>/dev/null
+            echo '```'
+            echo ""
+            echo "### project files"
+            echo '```'
+            find . -maxdepth 3 -not -path './.git*' | sort | head -n 60
+            echo '```'
+            if [ -f out/build.log ]; then
+              echo ""
+              echo "### error lines"
+              echo '```'
+              grep -n -E "error:|FAILURE:|What went wrong|Caused by:|Could not|not found|Exception|Unsupported|A problem occurred" out/build.log | tail -n 40 || echo "(no matching lines)"
+              echo '```'
+              echo ""
+              echo "### last 45 lines of the build log"
+              echo '```'
+              tail -n 45 out/build.log
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: out/build.log
+          if-no-files-found: warn
 
       - name: Collect the APK
+        if: steps.build.outcome == 'success'
         run: |
           set -e
           d="${{ steps.prep.outputs.dir }}"
@@ -68,6 +122,7 @@ jobs:
           ls -lh out
 
       - name: Upload the APK
+        if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: coloring-puzzle-apk
