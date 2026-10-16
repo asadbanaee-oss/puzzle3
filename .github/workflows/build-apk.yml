@@ -9,11 +9,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the project
-        uses: actions/checkout@v4
+            - name: Check out the project
+        uses: actions/checkout@v5          # قبلاً v4 بود
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5        # قبلاً v4 بود
         with:
           distribution: temurin
           java-version: '17'
