@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>پازل رنگ‌آمیزی ۴۸ تکهٔ نامنظم</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+
+  :root{
+    --bg:#0a0c15;
+    --panel:#151b2e;
+    --panel2:#1c2340;
+    --line:#2b3357;
+    --txt:#e9edfb;
+    --muted:#98a4c8;
+    --accent:#ff5c8a;
+    --accent2:#7c5cff;
+    --ok:#2ee6a8;
+    --radius:16px;
+    --paper:#fbfbf7;
+  }
+
+  html, body { margin:0; padding:0; }
+  body{
+    min-height:100vh; color:var(--txt);
+    font-family:"Vazirmatn","Segoe UI",Tahoma,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    background:
+      radial-gradient(1100px 560px at 88% -12%, rgba(124,92,255,.22), transparent 62%),
+      radial-gradient(900px 520px at 8% 112%, rgba(255,92,138,.18), transparent 62%),
+      var(--bg);
+  }
+
+  .wrap{ max-width:1280px; margin:0 auto; padding:20px 18px 44px; }
+
+  header.top{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:20px; }
+  .logo{
+    width:52px; height:52px; flex:0 0 52px; display:grid; place-items:center;
+    font-size:26px; border-radius:16px;
+    background:linear-gradient(140deg, rgba(255,92,138,.28), rgba(124,92,255,.30));
+    border:1px solid var(--line);
+  }
+  h1{ margin:0; font-size:clamp(18px, 2.4vw, 26px); letter-spacing:.2px; }
+  .sub{ margin:6px 0 0; color:var(--muted); font-size:13.5px; line-height:1.8; }
+  .sub b{ color:#dfe6ff; }
+
+  .panel{
+    background:linear-gradient(180deg, rgba(28,35,64,.75), rgba(21,27,46,.85));
+    border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:0 18px 50px rgba(0,0,0,.35); padding:16px;
+  }
+
+  /* ---------- upload ---------- */
+  .drop{
+    border:2px dashed rgba(124,92,255,.5); border-radius:14px;
+    padding:38px 18px; text-align:center; cursor:pointer;
+    transition:.18s background, .18s border-color, .18s transform;
+    background:rgba(124,92,255,.05);
+  }
+  .drop:hover{ background:rgba(124,92,255,.10); border-color:rgba(255,92,138,.65); }
+  .drop.over{ background:rgba(255,92,138,.13); border-color:var(--accent); transform:scale(1.005); }
+  .drop-icon{ font-size:44px; line-height:1; }
+  .drop-title{ margin:12px 0 4px; font-size:17px; font-weight:700; }
+  .drop-sub{ margin:0 0 18px; color:var(--muted); font-size:13px; line-height:1.8; }
+
+  .btn{
+    appearance:none; border:1px solid var(--line); cursor:pointer;
+    font-family:inherit; font-size:13.5px; font-weight:700;
+    padding:10px 16px; border-radius:12px; color:var(--txt);
+    background:var(--panel2); transition:.15s transform, .15s filter, .15s background;
+  }
+  .btn:hover{ transform:translateY(-1px); filter:brightness(1.12); }
+  .btn:active{ transform:translateY(0) scale(.98); }
+  .btn.primary{
+    border-color:transparent; color:#fff;
+    background:linear-gradient(120deg, var(--accent), var(--accent2));
+    box-shadow:0 10px 24px rgba(255,92,138,.28);
+  }
+  .btn.ghost{ background:rgba(255,255,255,.04); }
+  .row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+
+  /* ---------- game layout ---------- */
+  .game{ display:grid; grid-template-columns:minmax(0,1fr) 348px; gap:18px; align-items:start; }
+  @media (max-width:1000px){ .game{ grid-template-columns:1fr; } }
+
+  .board-col{ min-width:0; display:flex; flex-direction:column; align-items:center; gap:12px; }
+
+  .board{
+    position:relative; margin:0 auto; background:var(--paper);
+    border:1px solid var(--line); border-radius:var(--radius);
+    overflow:hidden; max-width:100%;
+    box-shadow:0 22px 60px rgba(0,0,0,.45);
+  }
+  .board canvas{ display:block; touch-action:manipulation; cursor:crosshair; }
+
+  .fx{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; }
+  .fx polygon.sel{
+    fill:none; stroke:var(--accent); stroke-width:3.5;
+    vector-effect:non-scaling-stroke; stroke-linejoin:round;
+    animation:selPulse 1.15s ease-in-out infinite;
+  }
+  @keyframes selPulse{ 0%,100%{ opacity:.40; } 50%{ opacity:1; } }
+
+  .fx polygon.popfx{
+    fill:rgba(255,255,255,.8); stroke:#ffffff; stroke-width:9;
+    vector-effect:non-scaling-stroke; stroke-linejoin:round;
+    animation:popFx .55s ease-out forwards;
+  }
+  @keyframes popFx{
+    from{ opacity:1; fill:rgba(255,255,255,.80); stroke-width:11; }
+    to{ opacity:0; fill:rgba(255,255,255,0); stroke-width:1; }
+  }
+
+  .fx polygon.denyfx{
+    fill:rgba(255,92,138,.22); stroke:var(--accent); stroke-width:6;
+    vector-effect:non-scaling-stroke; stroke-linejoin:round;
+    animation:denyFx .5s ease-out forwards;
+  }
+  @keyframes denyFx{
+    from{ opacity:1; stroke-width:13; }
+    to{ opacity:0; stroke-width:2; }
+  }
+
+  .foot-hint{ font-size:13px; color:var(--muted); text-align:center; line-height:1.9; }
+  .foot-hint b{ color:var(--accent); }
+
+  /* ---------- sidebar ---------- */
+  .side{ display:flex; flex-direction:column; gap:14px; min-width:0; }
+  .card{
+    background:linear-gradient(180deg, rgba(28,35,64,.7), rgba(21,27,46,.85));
+    border:1px solid var(--line); border-radius:14px; padding:13px 14px;
+  }
+  .card-head{
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:13.5px; font-weight:700; margin-bottom:10px; color:#cdd6f2;
+  }
+  .pill{
+    font-size:12px; font-weight:700; padding:3px 10px; border-radius:99px;
+    background:rgba(124,92,255,.18); border:1px solid var(--line); color:#d9e0ff;
+  }
+  .muted{ color:var(--muted); font-weight:500; font-size:12px; }
+
+  .bar{ height:10px; border-radius:99px; background:rgba(255,255,255,.07); overflow:hidden; }
+  .bar-fill{
+    height:100%; width:0%; border-radius:99px;
+    background:linear-gradient(90deg, var(--accent2), var(--accent));
+    box-shadow:0 0 14px rgba(255,92,138,.6); transition:width .28s ease;
+  }
+  .meta-row{ display:flex; justify-content:space-between; gap:10px; margin-top:10px; font-size:12.5px; color:var(--muted); }
+  .meta-row b{ color:#fff; }
+
+  .pad{ display:grid; grid-template-columns:repeat(auto-fill, minmax(40px, 1fr)); gap:6px; direction:ltr; max-height:330px; overflow-y:auto; padding-inline-end:4px; }
+  .pad button{
+    appearance:none; cursor:pointer; font-family:inherit;
+    aspect-ratio:1 / 1; min-width:0; border-radius:10px;
+    border:1px solid var(--line); background:rgba(255,255,255,.045);
+    color:#dfe5fb; padding:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    transition:.14s transform, .14s background, .14s color, .14s box-shadow, .14s opacity;
+  }
+  .pad button .b-num{ font-size:13.5px; font-weight:800; line-height:1; }
+  .pad button .b-cnt{ font-size:9.5px; font-weight:700; line-height:1; opacity:.72; }
+  .pad button:hover{ background:rgba(124,92,255,.25); transform:translateY(-1px); }
+  .pad button.done{
+    background:rgba(46,230,168,.14); color:var(--ok);
+    border-color:rgba(46,230,168,.45); opacity:.75;
+  }
+  .pad button.active{
+    background:linear-gradient(140deg, var(--accent), var(--accent2));
+    color:#fff; border-color:transparent; transform:scale(1.08);
+    box-shadow:0 6px 18px rgba(255,92,138,.45);
+  }
+  .pad button.active .b-cnt{ opacity:.9; }
+  .pad button.gone{ animation:padOut .34s ease-in forwards; pointer-events:none; }
+  @keyframes padOut{ to{ opacity:0; transform:scale(.35); } }
+  .pad-note{ margin-top:9px; font-size:11.5px; line-height:1.8; color:var(--muted); }
+
+  .tools{ display:flex; flex-direction:column; gap:10px; }
+  .field{ display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:var(--muted); }
+  .field select{
+    font-family:inherit; font-size:13px; color:var(--txt);
+    background:var(--panel2); border:1px solid var(--line);
+    border-radius:10px; padding:9px 10px; cursor:pointer;
+  }
+  .field input[type=range]{ width:100%; accent-color:var(--accent); cursor:pointer; }
+  .field .val{ color:#e6ebff; font-weight:700; }
+  .switch{ display:flex; align-items:center; gap:9px; font-size:13px; color:#d7def6; cursor:pointer; }
+  .switch input{ width:17px; height:17px; accent-color:var(--accent); cursor:pointer; }
+
+  /* ---------- win ---------- */
+  .win{
+    position:absolute; inset:0; z-index:6;
+    display:flex; align-items:center; justify-content:center; padding:16px;
+    background:rgba(7,9,18,.88); backdrop-filter:blur(7px);
+    animation:fade .35s ease-out;
+  }
+  @keyframes fade{ from{ opacity:0; } to{ opacity:1; } }
+  .win-card{ text-align:center; max-width:100%; animation:rise .45s cubic-bezier(.2,.9,.3,1.3); }
+  @keyframes rise{ from{ transform:translateY(18px) scale(.94); opacity:0; } to{ transform:none; opacity:1; } }
+  .win-emoji{ font-size:40px; line-height:1; }
+  .win-card h2{ margin:8px 0 4px; font-size:20px; }
+  .win-meta{ margin:0 0 12px; color:var(--muted); font-size:13px; }
+  .win-card img{
+    display:block; max-width:100%; max-height:42vh; margin:0 auto 14px;
+    border-radius:12px; border:1px solid var(--line); box-shadow:0 18px 44px rgba(0,0,0,.5);
+  }
+  .win-card .row .btn{ padding:9px 14px; font-size:13px; }
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed; inset-inline:0; bottom:22px; margin:0 auto; width:max-content; max-width:90vw;
+    padding:11px 18px; border-radius:12px; font-size:13.5px; font-weight:600;
+    background:rgba(21,27,46,.96); border:1px solid var(--line); color:#eaefff;
+    box-shadow:0 14px 40px rgba(0,0,0,.5); z-index:50; animation:fade .2s ease-out;
+  }
+  .toast.bad{ border-color:rgba(255,92,138,.6); color:#ffd9e4; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="logo">🧩</div>
+    <div>
+      <h1>پازل رنگ‌آمیزی ۴۸ تکهٔ نامنظم</h1>
+      <p class="sub">
+        تصویر به <b>۴۸۰ قطعهٔ چندضلعی</b> با اندازه‌های متفاوت و پراکنده تقسیم می‌شود و این قطعه‌ها بین چند <b>شماره</b> پخش می‌شوند؛
+        یعنی هر شماره <b>چند قطعه در نقاط مختلف تصویر</b> دارد. شماره را <b>فقط از فهرست شماره‌ها</b> انتخاب کن؛ با آن، همهٔ قطعه‌های
+        آن شماره شطرنجی می‌شوند و با کلیک روی هرکدام رنگ اصلی‌اش برمی‌گردد. کلیک روی خود تصویر شماره را عوض نمی‌کند. شماره تا وقتی
+        همهٔ قطعه‌هایش رنگ نشده باقی می‌ماند و بعد از کامل‌شدن از فهرست شماره‌ها حذف می‌شود.
+      </p>
+    </div>
+  </header>
+
+  <!-- ============ upload ============ -->
+  <section id="uploadPanel" class="panel">
+    <div id="dropZone" class="drop">
+      <div class="drop-icon">🖼️</div>
+      <p class="drop-title">عکس را اینجا رها کن یا کلیک کن</p>
+      <p class="drop-sub">JPG، PNG، WEBP یا GIF — می‌توانی با Ctrl+V هم عکس را بچسبانی.</p>
+      <div class="row">
+        <button class="btn primary" id="pickBtn" type="button">انتخاب عکس از کامپیوتر</button>
+        <button class="btn ghost" id="sampleBtn" type="button">استفاده از عکس نمونه</button>
+      </div>
+    </div>
+    <input id="fileInput" type="file" accept="image/*" hidden />
+  </section>
+
+  <!-- ============ game ============ -->
+  <section id="game" class="game" hidden>
+    <div class="board-col">
+      <div class="board" id="board">
+        <canvas id="boardCanvas"></canvas>
+        <svg class="fx" id="fx" xmlns="http://www.w3.org/2000/svg"><g id="fxG"></g></svg>
+
+        <div id="win" class="win" hidden>
+          <div class="win-card">
+            <div class="win-emoji">🎉</div>
+            <h2>آفرین! پازل کامل شد</h2>
+            <p class="win-meta" id="winMeta"></p>
+            <img id="winImg" alt="تصویر کامل‌شده" />
+            <div class="row">
+              <button class="btn primary" id="winNew" type="button">عکس جدید</button>
+              <button class="btn ghost" id="winDl" type="button">دانلود تصویر</button>
+              <button class="btn ghost" id="winAgain" type="button">دوباره همین عکس</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="foot-hint" id="hintLine"></div>
+    </div>
+
+    <aside class="side">
+      <div class="card">
+        <div class="card-head"><span>پیشرفت</span><span class="pill" id="progressText">0 / 480</span></div>
+        <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+        <div class="meta-row">
+          <span>⏱ زمان: <b id="timer">00:00</b></span>
+          <span>🔢 شماره فعال: <b id="activeNum">1</b></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span>شماره‌ها</span><span class="muted" id="padHint">—</span></div>
+        <div class="pad" id="pad"></div>
+        <div class="pad-note">شماره را از این فهرست انتخاب کن؛ کلیک روی تصویر شماره را عوض نمی‌کند.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span>ابزارها</span><span class="muted">۴۸۰ قطعه</span></div>
+        <div class="tools">
+          <label class="field">
+            <span>قطعه برای هر شماره (کل: ۴۸۰ قطعه)</span>
+            <select id="perNumSel">
+              <option value="48">48 قطعه → 10 شماره (آسان)</option>
+              <option value="24">24 قطعه → 20 شماره</option>
+              <option value="12">12 قطعه → 40 شماره</option>
+              <option value="8">8 قطعه → 60 شماره</option>
+              <option value="6">6 قطعه → 80 شماره</option>
+              <option value="5" selected>5 قطعه → 96 شماره (پیش‌فرض)</option>
+              <option value="4">4 قطعه → 120 شماره</option>
+              <option value="2">2 قطعه → 240 شماره (سخت)</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>قرار گرفتن عکس</span>
+            <select id="fitSel">
+              <option value="cover" selected>پر کردن کادر</option>
+              <option value="contain">نمایش کامل عکس</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>ترتیب شماره‌ها</span>
+            <select id="orderSel">
+              <option value="rows" selected>منظم (۱، ۲، ۳، ...)</option>
+              <option value="random">تصادفی (جست‌وجوی سخت‌تر)</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>وضوح خطوط راهنما: <span class="val" id="sketchVal">38%</span></span>
+            <input type="range" id="sketchRange" min="0" max="100" step="1" value="38" />
+          </label>
+
+          <label class="field">
+            <span>نمایش شماره‌ها روی تصویر</span>
+            <select id="numModeSel">
+              <option value="active" selected>فقط قطعه‌های شمارهٔ فعال (تمیزتر)</option>
+              <option value="all">همهٔ قطعه‌ها (شلوغ)</option>
+              <option value="none">بدون شماره</option>
+            </select>
+          </label>
+          <label class="switch"><input type="checkbox" id="outlineChk" checked /><span>نمایش مرز تکه‌ها</span></label>
+          <label class="switch"><input type="checkbox" id="autoChk" checked /><span>پس از اتمام هر شماره، خودکار به شمارهٔ بعدی برو</span></label>
+          <label class="switch"><input type="checkbox" id="soundChk" checked /><span>صدا</span></label>
+
+          <button class="btn ghost" id="reseedBtn" type="button">🎲 چیدمان جدید تکه‌ها</button>
+          <button class="btn ghost" id="peekBtn" type="button">👁 نگه‌داشتن برای دیدن عکس اصلی</button>
+          <button class="btn ghost" id="revealBtn" type="button">✨ تکمیل خودکار پازل</button>
+          <button class="btn ghost" id="resetBtn" type="button">↺ شروع دوباره</button>
+          <button class="btn ghost" id="saveStateBtn" type="button">⬇ ذخیره وضعیت فعلی</button>
+          <button class="btn ghost" id="saveFullBtn" type="button">⬇ ذخیره تصویر کامل رنگی</button>
+        </div>
+      </div>
+    </aside>
+  </section>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (sel, root) { return (root || document).querySelector(sel); };
+  var NS = 'http://www.w3.org/2000/svg';
+  var PIECES = 480;         /* total puzzle pieces */
+  var PER_NUMBER = 5;       /* how many pieces share one number -> PIECES / PER_NUMBER numbers */
+
+  var els = {
+    uploadPanel: $('#uploadPanel'), game: $('#game'), drop: $('#dropZone'),
+    file: $('#fileInput'), pick: $('#pickBtn'), sample: $('#sampleBtn'),
+    board: $('#board'), canvas: $('#boardCanvas'), fx: $('#fx'), fxG: $('#fxG'),
+    win: $('#win'), winImg: $('#winImg'), winMeta: $('#winMeta'),
+    winNew: $('#winNew'), winDl: $('#winDl'), winAgain: $('#winAgain'),
+    pad: $('#pad'), padHint: $('#padHint'), bar: $('#barFill'), progressText: $('#progressText'),
+    timer: $('#timer'), activeNum: $('#activeNum'), hint: $('#hintLine'),
+    perNumSel: $('#perNumSel'), fitSel: $('#fitSel'), orderSel: $('#orderSel'),
+    sketchRange: $('#sketchRange'), sketchVal: $('#sketchVal'),
+    numModeSel: $('#numModeSel'), outlineChk: $('#outlineChk'),
+    autoChk: $('#autoChk'), soundChk: $('#soundChk'),
+    reseed: $('#reseedBtn'), peek: $('#peekBtn'), reveal: $('#revealBtn'), reset: $('#resetBtn'),
+    saveState: $('#saveStateBtn'), saveFull: $('#saveFullBtn'), toast: $('#toast')
+  };
+
+  var S = {
+    img: null, W: 1200, H: 900,
+    work: null, sketchCanvas: null, checker: null, outlinePath: null,
+    prog: null, progCtx: null, /* baked layer with every piece that is already painted */
+    pieces: [],                 /* every piece: {i, num, poly, path, cx, cy, r, bbox} */
+    groups: [],                 /* [{num, ids:[pieceIndex...], total, remaining}] */
+    groupByNum: [],             /* num -> group */
+    padBtns: [],                /* num -> button */
+    doneP: new Array(PIECES).fill(false),
+    perNumber: PER_NUMBER,
+    selected: 1, numMode: 'active', showOutlines: true, autoNext: true, sound: true,
+    fit: 'cover', randomOrder: false, sketch: 0.38,
+    peek: false, completed: false, startedAt: 0, elapsed: 0, timerId: 0
+  };
+
+  var ctx = els.canvas.getContext('2d');
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  /* ============================ small helpers ============================ */
+
+  function toast(msg, bad) {
+    els.toast.textContent = msg;
+    els.toast.classList.toggle('bad', !!bad);
+    els.toast.hidden = false;
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { els.toast.hidden = true; }, 2400);
+  }
+
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+
+  function fmtTime(ms) {
+    var t = Math.max(0, Math.floor(ms / 1000));
+    var m = String(Math.floor(t / 60)), s = String(t % 60);
+    if (m.length < 2) m = '0' + m;
+    if (s.length < 2) s = '0' + s;
+    return m + ':' + s;
+  }
+
+  function doneCount() {
+    var c = 0;
+    for (var i = 0; i < PIECES; i++) { if (S.doneP[i]) c++; }
+    return c;
+  }
+
+  function remainingGroups() {
+    var c = 0;
+    for (var i = 0; i < S.groups.length; i++) { if (S.groups[i].remaining > 0) c++; }
+    return c;
+  }
+
+  /* next / previous number that still has unfilled pieces */
+  function nextGroup(from) {
+    var G = S.groups.length;
+    if (!G) return from;
+    for (var k = 1; k <= G; k++) {
+      var num = ((from - 1 + k) % G) + 1;
+      var g = S.groupByNum[num];
+      if (g && g.remaining > 0) return num;
+    }
+    return from;
+  }
+
+  function prevGroup(from) {
+    var G = S.groups.length;
+    if (!G) return from;
+    for (var k = 1; k <= G; k++) {
+      var num = (((from - 1 - k) % G) + G) % G + 1;
+      var g = S.groupByNum[num];
+      if (g && g.remaining > 0) return num;
+    }
+    return from;
+  }
+
+  function firstOpenPiece(num) {
+    var g = S.groupByNum[num];
+    if (!g) return null;
+    for (var i = 0; i < g.ids.length; i++) {
+      var pc = S.pieces[g.ids[i]];
+      if (pc && !S.doneP[pc.i]) return pc;
+    }
+    return null;
+  }
+
+  var audioCtx = null;
+  function beep(freq, dur, vol) {
+    if (!S.sound) return;
+    try {
+      if (!audioCtx) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        audioCtx = new AC();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      var t = audioCtx.currentTime, v = vol || 0.11;
+      o.type = 'sine';
+      o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(v, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + (dur || 0.14));
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t); o.stop(t + (dur || 0.14) + 0.03);
+    } catch (e) { /* ignore */ }
+  }
+
+  function roundRect(g, x, y, w, h, r) {
+    g.beginPath();
+    if (typeof g.roundRect === 'function') { g.roundRect(x, y, w, h, r); return; }
+    var rr = Math.min(r, w / 2, h / 2);
+    g.moveTo(x + rr, y);
+    g.arcTo(x + w, y, x + w, y + h, rr);
+    g.arcTo(x + w, y + h, x, y + h, rr);
+    g.arcTo(x, y + h, x, y, rr);
+    g.arcTo(x, y, x + w, y, rr);
+    g.closePath();
+  }
+
+  function makeCheckerPattern() {
+    var c = document.createElement('canvas');
+    c.width = 28; c.height = 28;
+    var g = c.getContext('2d');
+    g.fillStyle = 'rgba(255,255,255,0.85)';
+    g.fillRect(0, 0, 28, 28);
+    g.fillStyle = 'rgba(255,92,138,0.38)';
+    g.fillRect(0, 0, 14, 14);
+    g.fillRect(14, 14, 14, 14);
+    return ctx.createPattern(c, 'repeat');
+  }
+
+  /* ============================ image -> layers ============================ */
+
+  function drawFit(g, src, W, H, mode) {
+    var iw = src.naturalWidth || src.width;
+    var ih = src.naturalHeight || src.height;
+    g.fillStyle = '#0f1220';
+    g.fillRect(0, 0, W, H);
+    var ir = iw / ih, br = W / H, dw, dh;
+    if (mode === 'cover') {
+      if (ir > br) { dh = H; dw = H * ir; } else { dw = W; dh = W / ir; }
+    } else {
+      if (ir > br) { dw = W; dh = W / ir; } else { dh = H; dw = H * ir; }
+    }
+    g.imageSmoothingEnabled = true;
+    g.imageSmoothingQuality = 'high';
+    g.drawImage(src, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  }
+
+  /* faint pencil-like edges of the original image */
+  function makeSketch(work) {
+    var sw = Math.min(900, work.width);
+    var sh = Math.max(1, Math.round(work.height * (sw / work.width)));
+    var small = document.createElement('canvas');
+    small.width = sw; small.height = sh;
+    var sg = small.getContext('2d');
+    sg.drawImage(work, 0, 0, sw, sh);
+
+    var data;
+    try { data = sg.getImageData(0, 0, sw, sh); } catch (e) { return small; }
+    var p = data.data;
+    var gray = new Float32Array(sw * sh);
+    for (var i = 0, j = 0; i < p.length; i += 4, j++) {
+      gray[j] = 0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2];
+    }
+    var out = sg.createImageData(sw, sh);
+    var o = out.data;
+    for (var y = 0; y < sh; y++) {
+      var y0 = y > 0 ? y - 1 : 0, y1 = y < sh - 1 ? y + 1 : sh - 1;
+      for (var x = 0; x < sw; x++) {
+        var x0 = x > 0 ? x - 1 : 0, x1 = x < sw - 1 ? x + 1 : sw - 1;
+        var tl = gray[y0 * sw + x0], tc = gray[y0 * sw + x], tr = gray[y0 * sw + x1];
+        var ml = gray[y * sw + x0], mr = gray[y * sw + x1];
+        var bl = gray[y1 * sw + x0], bc = gray[y1 * sw + x], br = gray[y1 * sw + x1];
+        var gx = (tr + 2 * mr + br) - (tl + 2 * ml + bl);
+        var gy = (bl + 2 * bc + br) - (tl + 2 * tc + tr);
+        var m = Math.sqrt(gx * gx + gy * gy);
+        var a = (m - 42) / 150;
+        var k = (y * sw + x) * 4;
+        o[k] = 58; o[k + 1] = 62; o[k + 2] = 86;
+        o[k + 3] = Math.round(clamp(a, 0, 1) * 255);
+      }
+    }
+    sg.putImageData(out, 0, 0);
+    return small;
+  }
+
+  /* ============================ geometry ============================ */
+
+  function centroid(poly) {
+    var a = 0, cx = 0, cy = 0;
+    for (var i = 0; i < poly.length; i++) {
+      var p1 = poly[i], p2 = poly[(i + 1) % poly.length];
+      var f = p1[0] * p2[1] - p2[0] * p1[1];
+      a += f; cx += (p1[0] + p2[0]) * f; cy += (p1[1] + p2[1]) * f;
+    }
+    if (Math.abs(a) < 1e-9) {
+      var sx = 0, sy = 0;
+      for (var q = 0; q < poly.length; q++) { sx += poly[q][0]; sy += poly[q][1]; }
+      return { x: sx / poly.length, y: sy / poly.length };
+    }
+    a *= 0.5;
+    return { x: cx / (6 * a), y: cy / (6 * a) };
+  }
+
+  function polyArea(poly) {
+    var a = 0;
+    for (var i = 0; i < poly.length; i++) {
+      var p1 = poly[i], p2 = poly[(i + 1) % poly.length];
+      a += p1[0] * p2[1] - p2[0] * p1[1];
+    }
+    return Math.abs(a) * 0.5;
+  }
+
+  function distPointSeg(p, a, b) {
+    var vx = b[0] - a[0], vy = b[1] - a[1];
+    var wx = p[0] - a[0], wy = p[1] - a[1];
+    var len2 = vx * vx + vy * vy;
+    var t = len2 > 0 ? (wx * vx + wy * vy) / len2 : 0;
+    t = clamp(t, 0, 1);
+    var dx = p[0] - (a[0] + vx * t), dy = p[1] - (a[1] + vy * t);
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function inradius(poly, c) {
+    var d = Infinity;
+    for (var i = 0; i < poly.length; i++) {
+      d = Math.min(d, distPointSeg([c.x, c.y], poly[i], poly[(i + 1) % poly.length]));
+    }
+    return d === Infinity ? 0 : d;
+  }
+
+  function pointInPoly(x, y, poly) {
+    var inside = false;
+    for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      var xi = poly[i][0], yi = poly[i][1], xj = poly[j][0], yj = poly[j][1];
+      if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) inside = !inside;
+    }
+    return inside;
+  }
+
+  /* Sutherland-Hodgman clip against half-plane  nx*x + ny*y <= c */
+  function clipHalf(poly, nx, ny, c) {
+    var out = [];
+    for (var i = 0; i < poly.length; i++) {
+      var A = poly[i], B = poly[(i + 1) % poly.length];
+      var da = nx * A[0] + ny * A[1] - c;
+      var db = nx * B[0] + ny * B[1] - c;
+      if (da <= 0) out.push(A);
+      if ((da < 0 && db > 0) || (da > 0 && db < 0)) {
+        var t = da / (da - db);
+        out.push([A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t]);
+      }
+    }
+    return out;
+  }
+
+  /* exact Voronoi via half-plane clipping against every other seed */
+  function voronoi(seeds, W, H) {
+    var cells = [];
+    for (var i = 0; i < seeds.length; i++) {
+      var a = seeds[i];
+      var poly = [[0, 0], [W, 0], [W, H], [0, H]];
+      for (var j = 0; j < seeds.length; j++) {
+        if (i === j) continue;
+        var b = seeds[j];
+        var nx = b[0] - a[0], ny = b[1] - a[1];
+        if (nx === 0 && ny === 0) { poly = []; break; }
+        var mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+        poly = clipHalf(poly, nx, ny, nx * mx + ny * my);
+        if (poly.length < 3) break;
+      }
+      cells.push(poly);
+    }
+    return cells;
+  }
+
+  function randomSeeds(n, W, H) {
+    var pts = [], minD = Math.sqrt((W * H) / n) * 0.52;
+    var guard = 0;
+    while (pts.length < n && guard < n * 900) {
+      guard++;
+      var x = Math.random() * W, y = Math.random() * H, ok = true;
+      for (var i = 0; i < pts.length; i++) {
+        var dx = x - pts[i][0], dy = y - pts[i][1];
+        if (dx * dx + dy * dy < minD * minD) { ok = false; break; }
+      }
+      if (ok) pts.push([x, y]);
+    }
+    while (pts.length < n) pts.push([Math.random() * W, Math.random() * H]);
+    return pts;
+  }
+
+  function fallbackGrid(W, H) {
+    var cols = Math.max(2, Math.round(Math.sqrt(PIECES * (W / H))));
+    var rows = Math.max(2, Math.ceil(PIECES / cols));
+    var pts = [], r, c;
+    for (r = 0; r <= rows; r++) {
+      pts[r] = [];
+      for (c = 0; c <= cols; c++) {
+        var x = (c / cols) * W, y = (r / rows) * H;
+        if (c > 0 && c < cols) x += (Math.random() - 0.5) * (W / cols) * 0.45;
+        if (r > 0 && r < rows) y += (Math.random() - 0.5) * (H / rows) * 0.45;
+        pts[r][c] = [x, y];
+      }
+    }
+    var cells = [];
+    for (r = 0; r < rows && cells.length < PIECES; r++) {
+      for (c = 0; c < cols && cells.length < PIECES; c++) {
+        cells.push([pts[r][c], pts[r][c + 1], pts[r + 1][c + 1], pts[r + 1][c]]);
+      }
+    }
+    return cells;
+  }
+
+  /* scattered, unevenly sized, non-overlapping convex pieces */
+  function generateCells(W, H) {
+    var n = PIECES, best = null, bestScore = -Infinity, attempt;
+    for (attempt = 0; attempt < 30; attempt++) {
+      var seeds = randomSeeds(n, W, H);
+      var cs = voronoi(seeds, W, H);
+      if (cs.length !== n || cs.some(function (p) { return p.length < 3; })) continue;
+
+      /* gentle Lloyd relaxation: keeps shapes tidy but uneven */
+      var bad = false;
+      for (var it = 0; it < 2 && !bad; it++) {
+        seeds = seeds.map(function (s, i) {
+          var c = centroid(cs[i]);
+          return [s[0] + (c.x - s[0]) * 0.55, s[1] + (c.y - s[1]) * 0.55];
+        });
+        cs = voronoi(seeds, W, H);
+        if (cs.length !== n || cs.some(function (p) { return p.length < 3; })) bad = true;
+      }
+      if (bad) continue;
+
+      /* balance extreme sizes by nudging the smallest seed toward the biggest cell */
+      var avg = (W * H) / n;
+      for (var pass = 0; pass < 12; pass++) {
+        var areas = cs.map(polyArea);
+        var mi = 0, ma = 0;
+        for (var q = 1; q < cs.length; q++) {
+          if (areas[q] < areas[mi]) mi = q;
+          if (areas[q] > areas[ma]) ma = q;
+        }
+        if (areas[mi] > avg * 0.30 && areas[ma] < avg * 2.35) break;
+        var target = centroid(cs[ma]);
+        seeds[mi] = [
+          seeds[mi][0] + (target.x - seeds[mi][0]) * 0.4,
+          seeds[mi][1] + (target.y - seeds[mi][1]) * 0.4
+        ];
+        var next = voronoi(seeds, W, H);
+        if (next.length !== n || next.some(function (p) { return p.length < 3; })) break;
+        cs = next;
+      }
+      if (cs.length !== n || cs.some(function (p) { return p.length < 3; })) continue;
+
+      /* quality gate: no razor-thin slivers and no micro pieces, otherwise a
+         piece would be unreadable and nearly impossible to click */
+      var minArea = Infinity, minR = Infinity;
+      for (var qi = 0; qi < cs.length; qi++) {
+        minArea = Math.min(minArea, polyArea(cs[qi]));
+        minR = Math.min(minR, inradius(cs[qi], centroid(cs[qi])));
+      }
+      if (minArea >= avg * 0.24 && minR >= Math.max(12, Math.sqrt(avg) * 0.13)) return cs;
+      if (minR > bestScore) { bestScore = minR; best = cs; }
+    }
+    if (best) return best;
+    return fallbackGrid(W, H);
+  }
+
+  /* reading-order (row bands) index list of the cells */
+  function numberingOrder(cells, W, H) {
+    var items = cells.map(function (p, i) {
+      var c = centroid(p);
+      return { i: i, x: c.x, y: c.y };
+    });
+    items.sort(function (a, b) { return a.y - b.y; });
+    var bandH = H / 7, order = [], k = 0;
+    while (k < items.length) {
+      var start = items[k].y, grp = [];
+      while (k < items.length && (items[k].y - start) <= bandH) { grp.push(items[k]); k++; }
+      grp.sort(function (a, b) { return a.x - b.x; });
+      for (var g = 0; g < grp.length; g++) order.push(grp[g].i);
+    }
+    return order;
+  }
+
+  /* Spread the 48 pieces over G numbers with a farthest-point rule: every piece
+     goes to the number whose pieces are currently the furthest away (numbers
+     that own nothing yet are served first, and every number may only own as
+     many pieces as its share). The pieces of one number therefore never sit
+     next to each other - they end up in far apart corners of the picture. */
+  function assignGroups(order, cells, W, H, G) {
+    var n = order.length, i, g;
+    var pts = [];
+    for (i = 0; i < n; i++) {
+      var c = centroid(cells[order[i]]);
+      pts.push({ x: c.x, y: c.y });
+    }
+
+    /* how many pieces each number may own */
+    var base = Math.floor(n / G), extra = n % G;
+    var cap = new Array(G + 1).fill(base);
+    var ticket = [];
+    for (g = 1; g <= G; g++) ticket.push(g);
+    for (var s = ticket.length - 1; s > 0; s--) {
+      var r = Math.floor(Math.random() * (s + 1));
+      var t = ticket[s]; ticket[s] = ticket[r]; ticket[r] = t;
+    }
+    for (var e = 0; e < extra; e++) cap[ticket[e]]++;
+
+    var labels = new Array(n);
+    var owner = [];
+    for (g = 1; g <= G; g++) owner[g] = [];
+
+    for (i = 0; i < n; i++) {
+      var bestG = 0, bestScore = -1;
+      for (g = 1; g <= G; g++) {
+        if (owner[g].length >= cap[g]) continue;
+        var score;
+        if (!owner[g].length) {
+          score = 1e9 + Math.random();              /* empty numbers first */
+        } else {
+          var m = Infinity;
+          for (var q = 0; q < owner[g].length; q++) {
+            var o = pts[owner[g][q]];
+            var dx = o.x - pts[i].x, dy = o.y - pts[i].y;
+            var d = Math.sqrt(dx * dx + dy * dy);
+            if (d < m) m = d;
+          }
+          score = m + Math.random() * 0.5;          /* farthest first */
+        }
+        if (score > bestScore) { bestScore = score; bestG = g; }
+      }
+      if (!bestG) {
+        for (g = 1; g <= G; g++) { if (owner[g].length < cap[g]) { bestG = g; break; } }
+      }
+      owner[bestG].push(i);
+      labels[order[i]] = bestG;
+    }
+    return labels;
+  }
+
+  function buildPieces() {
+    var cells = generateCells(S.W, S.H);
+    var order = numberingOrder(cells, S.W, S.H);
+    var G = Math.max(2, Math.min(Math.round(PIECES / S.perNumber), PIECES));
+    var labels = assignGroups(order, cells, S.W, S.H, G);
+
+    var perm = [], i;
+    for (i = 1; i <= G; i++) perm.push(i);
+    if (S.randomOrder) {
+      for (var s = perm.length - 1; s > 0; s--) {
+        var r = Math.floor(Math.random() * (s + 1));
+        var t = perm[s]; perm[s] = perm[r]; perm[r] = t;
+      }
+    }
+
+    S.pieces = [];
+    S.groups = [];
+    S.groupByNum = [];
+    S.outlinePath = new Path2D();
+
+    for (var k = 0; k < order.length && k < PIECES; k++) {
+      var poly = cells[order[k]];
+      var num = perm[labels[order[k]] - 1];
+      var path = new Path2D();
+      path.moveTo(poly[0][0], poly[0][1]);
+      for (var v = 1; v < poly.length; v++) path.lineTo(poly[v][0], poly[v][1]);
+      path.closePath();
+
+      S.outlinePath.moveTo(poly[0][0], poly[0][1]);
+      for (var v2 = 1; v2 < poly.length; v2++) S.outlinePath.lineTo(poly[v2][0], poly[v2][1]);
+      S.outlinePath.closePath();
+
+      var c = centroid(poly);
+      var rr = inradius(poly, c);
+      var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (var m = 0; m < poly.length; m++) {
+        if (poly[m][0] < minX) minX = poly[m][0];
+        if (poly[m][0] > maxX) maxX = poly[m][0];
+        if (poly[m][1] < minY) minY = poly[m][1];
+        if (poly[m][1] > maxY) maxY = poly[m][1];
+      }
+
+      var pc = {
+        i: k, num: num, poly: poly, path: path, cx: c.x, cy: c.y, r: rr,
+        minX: minX, maxX: maxX, minY: minY, maxY: maxY
+      };
+      S.pieces.push(pc);
+
+      if (!S.groupByNum[num]) {
+        S.groupByNum[num] = { num: num, ids: [], total: 0, remaining: 0 };
+        S.groups.push(S.groupByNum[num]);
+      }
+      S.groupByNum[num].ids.push(k);
+      S.groupByNum[num].total++;
+    }
+
+    for (var q = 0; q < S.groups.length; q++) S.groups[q].remaining = S.groups[q].total;
+    S.groups.sort(function (a, b) { return a.num - b.num; });
+    S.doneP = new Array(PIECES).fill(false);
+  }
+
+  /* ============================ layout / render ============================ */
+
+  function layout(fresh) {
+    var iw = S.img.naturalWidth || S.img.width;
+    var ih = S.img.naturalHeight || S.img.height;
+    var scale = Math.min(1, 2000 / Math.max(iw, ih));
+    S.W = Math.max(320, Math.round(iw * scale));
+    S.H = Math.max(240, Math.round(ih * scale));
+
+    els.canvas.width = Math.round(S.W * dpr);
+    els.canvas.height = Math.round(S.H * dpr);
+    els.fx.setAttribute('viewBox', '0 0 ' + S.W + ' ' + S.H);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    S.work = document.createElement('canvas');
+    S.work.width = S.W; S.work.height = S.H;
+    var wc = S.work.getContext('2d');
+    wc.imageSmoothingEnabled = true;
+    wc.imageSmoothingQuality = 'high';
+    drawFit(wc, S.img, S.W, S.H, S.fit);
+
+    S.sketchCanvas = makeSketch(S.work);
+    if (!S.checker) S.checker = makeCheckerPattern();
+
+    S.prog = document.createElement('canvas');
+    S.prog.width = S.W; S.prog.height = S.H;
+    S.progCtx = S.prog.getContext('2d');
+
+    if (fresh) buildPieces();
+
+    fitBoard();
+  }
+
+  function fitBoard() {
+    var col = els.board.parentElement;
+    var availW = Math.max(220, col.clientWidth);
+    var availH = Math.max(240, window.innerHeight * 0.70);
+    var sc = Math.min(availW / S.W, availH / S.H, 1.7);
+    var w = Math.max(150, Math.round(S.W * sc));
+    var h = Math.round(S.H * sc);
+    els.canvas.style.width = w + 'px';
+    els.canvas.style.height = h + 'px';
+    els.board.style.width = w + 'px';
+    els.board.style.height = h + 'px';
+  }
+
+  function selectedPath() {
+    var g = S.groupByNum[S.selected];
+    if (!g || g.remaining <= 0) return null;
+    var p = new Path2D();
+    for (var i = 0; i < g.ids.length; i++) {
+      var pc = S.pieces[g.ids[i]];
+      if (pc && !S.doneP[pc.i]) p.addPath(pc.path);
+    }
+    return p;
+  }
+
+  /* bake a painted piece into the progress layer, so a redraw stays cheap even
+     when the picture is cut into hundreds of pieces */
+  function paintPiece(pc) {
+    if (!S.progCtx || !pc) return;
+    S.progCtx.save();
+    S.progCtx.clip(pc.path);
+    S.progCtx.drawImage(S.work, 0, 0);
+    S.progCtx.restore();
+  }
+
+  function render(mode) {
+    mode = mode || 'game';
+    var preview = (mode === 'preview');
+    var plain = (mode !== 'game');
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#fbfbf7';
+    ctx.fillRect(0, 0, S.W, S.H);
+
+    if (S.sketchCanvas && S.sketch > 0 && !preview) {
+      ctx.globalAlpha = S.sketch;
+      ctx.drawImage(S.sketchCanvas, 0, 0, S.W, S.H);
+      ctx.globalAlpha = 1;
+    }
+
+    if (preview) {
+      ctx.drawImage(S.work, 0, 0);
+    } else if (S.prog) {
+      ctx.drawImage(S.prog, 0, 0, S.W, S.H);
+    }
+    ctx.globalAlpha = 1;
+
+    if (plain) return;
+
+    /* checkered highlight on every unfilled piece of the active number */
+    if (!S.completed && S.checker) {
+      var sp = selectedPath();
+      if (sp) {
+        ctx.save();
+        ctx.clip(sp);
+        ctx.fillStyle = S.checker;
+        ctx.fillRect(0, 0, S.W, S.H);
+        ctx.restore();
+      }
+    }
+
+    /* piece borders */
+    if (S.showOutlines && S.outlinePath) {
+      var lw = Math.max(1, S.W * 0.0016);
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = 'rgba(255,255,255,0.50)';
+      ctx.lineWidth = lw + 2;
+      ctx.stroke(S.outlinePath);
+      ctx.strokeStyle = 'rgba(72,78,104,0.62)';
+      ctx.lineWidth = lw;
+      ctx.stroke(S.outlinePath);
+    }
+
+    /* numbers: on every piece, only on the pieces of the active number, or none */
+    if (S.numMode === 'none') return;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (var q = 0; q < S.pieces.length; q++) {
+      var p = S.pieces[q];
+      if (S.doneP[p.i]) continue;
+      var active = (p.num === S.selected);
+      if (!active && S.numMode === 'active') continue;
+      var fs = clamp(p.r * (active ? 1.25 : 1.12), active ? 9 : 7, active ? 26 : 22);
+      var maxW = Math.max(13, p.r * (active ? 2.6 : 2.5));
+      if (fs * 1.95 > maxW) fs = Math.max(6.5, maxW / 1.95);
+      ctx.font = '700 ' + fs.toFixed(1) + 'px "Segoe UI", Tahoma, system-ui, sans-serif';
+      var w = fs * 1.9, h = fs * 1.45;
+      roundRect(ctx, p.cx - w / 2, p.cy - h / 2, w, h, h / 2);
+      ctx.fillStyle = active ? 'rgba(255,92,138,0.96)' : 'rgba(255,255,255,0.90)';
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = active ? 'rgba(255,92,138,1)' : 'rgba(72,78,104,0.55)';
+      ctx.stroke();
+      ctx.fillStyle = active ? '#ffffff' : '#39405a';
+      ctx.fillText(String(p.num), p.cx, p.cy + 0.5);
+    }
+  }
+
+  function pointsStr(poly) {
+    var a = [];
+    for (var i = 0; i < poly.length; i++) a.push(poly[i][0].toFixed(1) + ',' + poly[i][1].toFixed(1));
+    return a.join(' ');
+  }
+
+  function updateFx() {
+    var g = els.fxG;
+    while (g.firstChild) g.removeChild(g.firstChild);
+    if (!S.img || S.completed) return;
+    var grp = S.groupByNum[S.selected];
+    if (!grp || grp.remaining <= 0) return;
+    for (var i = 0; i < grp.ids.length; i++) {
+      var pc = S.pieces[grp.ids[i]];
+      if (!pc || S.doneP[pc.i]) continue;
+      var poly = document.createElementNS(NS, 'polygon');
+      poly.setAttribute('points', pointsStr(pc.poly));
+      poly.setAttribute('class', 'sel');
+      g.appendChild(poly);
+    }
+  }
+
+  function popFx(pc, cls) {
+    if (!pc) return;
+    var poly = document.createElementNS(NS, 'polygon');
+    poly.setAttribute('points', pointsStr(pc.poly));
+    poly.setAttribute('class', cls || 'popfx');
+    els.fxG.appendChild(poly);
+    setTimeout(function () { if (poly.parentNode) poly.parentNode.removeChild(poly); }, 620);
+  }
+
+  /* ============================ game logic ============================ */
+
+  function buildPad() {
+    var frag = document.createDocumentFragment();
+    S.padBtns = [];
+    for (var n = 1; n <= S.groups.length; n++) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.n = String(n);
+      b.innerHTML = '<span class="b-num">' + n + '</span><span class="b-cnt"></span>';
+      frag.appendChild(b);
+      S.padBtns[n] = b;
+    }
+    els.pad.innerHTML = '';
+    els.pad.appendChild(frag);
+  }
+
+  function updatePad() {
+    for (var n = 1; n < S.padBtns.length; n++) {
+      var b = S.padBtns[n];
+      if (!b || !b.parentNode) continue;
+      var g = S.groupByNum[n];
+      var left = g ? g.remaining : 0;
+      b.classList.toggle('active', n === S.selected && left > 0);
+      b.classList.toggle('done', left === 0);
+      var cnt = b.querySelector('.b-cnt');
+      if (cnt) cnt.textContent = left > 0 ? String(left) : '✓';
+    }
+  }
+
+  /* remove a finished number from the number list */
+  function dropPadButton(num) {
+    var b = S.padBtns[num];
+    if (!b) return;
+    S.padBtns[num] = null;
+    b.classList.add('gone');
+    setTimeout(function () { if (b.parentNode) b.parentNode.removeChild(b); }, 360);
+  }
+
+  function updateHud() {
+    var c = doneCount();
+    els.progressText.textContent = c + ' / ' + PIECES;
+    els.bar.style.width = (c / PIECES * 100) + '%';
+    els.activeNum.textContent = String(S.selected);
+    if (els.padHint) {
+      els.padHint.textContent = S.completed ? 'همه تمام شد' : (remainingGroups() + ' شماره باقی مانده');
+    }
+    var g = S.groupByNum[S.selected];
+    var left = g ? g.remaining : 0;
+    if (S.completed) {
+      els.hint.innerHTML = 'پازل کامل شد! 🎉';
+    } else if (g && left > 0) {
+      els.hint.innerHTML = 'شماره فعال: <b>' + S.selected + '</b> — ' + left + ' قطعه از ' + g.total +
+        ' باقی مانده؛ روی همان قطعه‌های شطرنجی کلیک کن.';
+    } else {
+      els.hint.innerHTML = 'شماره <b>' + S.selected + '</b> کامل شد — یک شمارهٔ دیگر از فهرست شماره‌ها انتخاب کن.';
+    }
+  }
+
+  function select(num, quiet) {
+    if (!S.img || S.completed) return;
+    var g = S.groupByNum[num];
+    if (!g || g.remaining <= 0) {
+      if (!quiet) toast('شماره ' + num + ' کامل شده است.', true);
+      return;
+    }
+    if (S.selected === num) { updatePad(); updateHud(); updateFx(); return; }
+    S.selected = num;
+    if (!quiet) beep(880, 0.05, 0.045);
+    render('game');
+    updatePad();
+    updateHud();
+    updateFx();
+  }
+
+  function fillPiece(pc) {
+    if (!S.img || S.completed || !pc || S.doneP[pc.i]) return;
+    S.doneP[pc.i] = true;
+    paintPiece(pc);
+    popFx(pc);
+    beep(520 + (pc.num % 11) * 46, 0.13, 0.1);
+
+    var g = S.groupByNum[pc.num];
+    if (g && g.remaining > 0) g.remaining--;
+
+    if (doneCount() >= PIECES) {
+      render('game'); updatePad(); updateHud(); updateFx();
+      onWin();
+      return;
+    }
+
+    var finished = (g && g.remaining === 0);
+    if (finished) {
+      dropPadButton(g.num);
+      /* the number stays active while it still has pieces; only a finished
+         number moves the selection on */
+      if (S.autoNext) S.selected = nextGroup(g.num);
+    }
+
+    render('game');
+    updatePad();
+    updateHud();
+    updateFx();
+
+    if (finished) toast('شماره ' + g.num + ' کامل شد و از فهرست حذف شد!', false);
+  }
+
+  function startTimer() {
+    stopTimer();
+    S.startedAt = Date.now();
+    S.elapsed = 0;
+    els.timer.textContent = '00:00';
+    S.timerId = setInterval(function () {
+      S.elapsed = Date.now() - S.startedAt;
+      els.timer.textContent = fmtTime(S.elapsed);
+    }, 400);
+  }
+
+  function stopTimer() {
+    if (S.timerId) { clearInterval(S.timerId); S.timerId = 0; }
+  }
+
+  function resetProgress() {
+    S.doneP = new Array(PIECES).fill(false);
+    if (S.progCtx) S.progCtx.clearRect(0, 0, S.W, S.H);
+    for (var i = 0; i < S.groups.length; i++) S.groups[i].remaining = S.groups[i].total;
+    S.completed = false;
+    S.peek = false;
+    S.selected = nextGroup(0) || 1;
+    els.win.hidden = true;
+    buildPad();
+    render('game');
+    updatePad();
+    updateHud();
+    updateFx();
+    startTimer();
+  }
+
+  function rebuild(freshPieces) {
+    layout(freshPieces);
+    resetProgress();
+  }
+
+  function beginWithSource(src) {
+    S.img = src;
+    els.uploadPanel.hidden = true;
+    els.game.hidden = false;
+    rebuild(true);
+    requestAnimationFrame(fitBoard);
+    toast('عکس بارگذاری شد — ' + PIECES + ' قطعه در ' + S.groups.length + ' شماره پخش شد (حدود ' +
+      Math.round(PIECES / Math.max(1, S.groups.length)) + ' قطعه برای هر شماره). شماره را از فهرست انتخاب کن.');
+  }
+
+  function onWin() {
+    S.completed = true;
+    S.elapsed = Date.now() - S.startedAt;
+    stopTimer();
+    els.timer.textContent = fmtTime(S.elapsed);
+    updateFx();
+    updateHud();
+    try { els.winImg.src = S.work.toDataURL('image/png'); } catch (e) {}
+    els.winMeta.textContent = 'زمان: ' + fmtTime(S.elapsed) + ' — هر ' + PIECES + ' قطعه رنگ شد.';
+    els.win.hidden = false;
+    for (var k = 0; k < 5; k++) {
+      (function (k2) { setTimeout(function () { beep(620 + k2 * 140, 0.18, 0.09); }, k2 * 130); })(k);
+    }
+  }
+
+  /* ============================ files ============================ */
+
+  function isImageFile(f) {
+    return f && ((f.type && f.type.indexOf('image/') === 0) ||
+      /\.(png|jpe?g|webp|gif|bmp|avif)$/i.test(f.name || ''));
+  }
+
+  function loadFile(file) {
+    if (!isImageFile(file)) { toast('لطفاً یک فایل تصویری انتخاب کن.', true); return; }
+    /* a data: URL instead of a blob: URL - inside an Android WebView (file://)
+       a blob counts as cross-origin, which would taint the canvas and break
+       "save picture" and the final-image preview */
+    var fr = new FileReader();
+    fr.onload = function () {
+      var img = new Image();
+      img.onload = function () { beginWithSource(img); };
+      img.onerror = function () { toast('خواندن این تصویر ممکن نشد.', true); };
+      img.src = fr.result;
+    };
+    fr.onerror = function () { toast('خواندن این فایل ممکن نشد.', true); };
+    fr.readAsDataURL(file);
+  }
+
+  function makeSample() {
+    var w = 1280, h = 960;
+    var c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    var g = c.getContext('2d');
+
+    var sky = g.createLinearGradient(0, 0, 0, h);
+    sky.addColorStop(0, '#2a1e6e');
+    sky.addColorStop(0.45, '#ff8fb1');
+    sky.addColorStop(0.72, '#ffd28a');
+    sky.addColorStop(1, '#ffb457');
+    g.fillStyle = sky; g.fillRect(0, 0, w, h);
+
+    g.fillStyle = 'rgba(255,240,190,0.30)';
+    g.beginPath(); g.arc(w * 0.74, h * 0.28, 150, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#fff2c2';
+    g.beginPath(); g.arc(w * 0.74, h * 0.28, 92, 0, Math.PI * 2); g.fill();
+
+    g.fillStyle = '#6a3fb5';
+    g.beginPath(); g.moveTo(0, h * 0.72); g.lineTo(w * 0.22, h * 0.44); g.lineTo(w * 0.44, h * 0.72); g.closePath(); g.fill();
+
+    g.fillStyle = '#4b2a86';
+    g.beginPath(); g.moveTo(w * 0.30, h * 0.75); g.lineTo(w * 0.58, h * 0.40); g.lineTo(w * 0.88, h * 0.75); g.closePath(); g.fill();
+
+    g.fillStyle = '#1f7a5c';
+    g.beginPath(); g.moveTo(0, h); g.lineTo(0, h * 0.76); g.lineTo(w, h * 0.68); g.lineTo(w, h); g.closePath(); g.fill();
+
+    g.fillStyle = '#2fa07a';
+    g.beginPath(); g.moveTo(0, h); g.lineTo(0, h * 0.88); g.lineTo(w, h * 0.80); g.lineTo(w, h); g.closePath(); g.fill();
+
+    var colors = ['#ff5c8a', '#ffd166', '#4cc9f0', '#7c5cff', '#2ee6a8', '#ff8f3f'];
+    for (var i = 0; i < 46; i++) {
+      var x = Math.random() * w, y = h * 0.55 + Math.random() * h * 0.45;
+      var rr = 6 + Math.random() * 26;
+      g.globalAlpha = 0.55 + Math.random() * 0.45;
+      g.fillStyle = colors[i % colors.length];
+      g.beginPath();
+      if (i % 3 === 0) g.rect(x, y, rr * 1.6, rr * 1.6);
+      else g.arc(x, y, rr, 0, Math.PI * 2);
+      g.fill();
+    }
+    g.globalAlpha = 1;
+
+    g.fillStyle = 'rgba(255,255,255,0.92)';
+    g.font = '700 54px "Segoe UI", Tahoma, sans-serif';
+    g.textAlign = 'center';
+    g.fillText('SAMPLE  •  480 PIECES', w / 2, h * 0.95);
+
+    return c;
+  }
+
+  /* ============================ export ============================ */
+
+  function downloadDataURL(url, name) {
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function exportCurrent(plain) {
+    render(plain ? 'plain' : 'game');
+    var url = els.canvas.toDataURL('image/png');
+    render('game');
+    return url;
+  }
+
+  /* ============================ events ============================ */
+
+  els.pick.addEventListener('click', function (e) { e.stopPropagation(); els.file.click(); });
+  els.drop.addEventListener('click', function () { els.file.click(); });
+  els.file.addEventListener('change', function () {
+    if (els.file.files && els.file.files[0]) loadFile(els.file.files[0]);
+    els.file.value = '';
+  });
+
+  ['dragenter', 'dragover'].forEach(function (ev) {
+    els.drop.addEventListener(ev, function (e) { e.preventDefault(); els.drop.classList.add('over'); });
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    els.drop.addEventListener(ev, function (e) {
+      e.preventDefault();
+      els.drop.classList.remove('over');
+    });
+  });
+  els.drop.addEventListener('drop', function (e) {
+    var dt = e.dataTransfer;
+    if (dt && dt.files && dt.files[0]) loadFile(dt.files[0]);
+  });
+  window.addEventListener('dragover', function (e) { e.preventDefault(); });
+  window.addEventListener('drop', function (e) { e.preventDefault(); });
+  window.addEventListener('paste', function (e) {
+    var items = (e.clipboardData && e.clipboardData.items) || [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type && items[i].type.indexOf('image/') === 0) {
+        var f = items[i].getAsFile();
+        if (f) { loadFile(f); return; }
+      }
+    }
+  });
+
+  els.sample.addEventListener('click', function (e) {
+    e.stopPropagation();
+    beginWithSource(makeSample());
+  });
+
+  els.pad.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('button[data-n]') : null;
+    if (!b) return;
+    select(parseInt(b.dataset.n, 10));
+  });
+
+  els.canvas.addEventListener('click', function (e) {
+    if (!S.img || S.completed) return;
+    var rect = els.canvas.getBoundingClientRect();
+    var x = (e.clientX - rect.left) / rect.width * S.W;
+    var y = (e.clientY - rect.top) / rect.height * S.H;
+    var hit = null;
+    for (var i = 0; i < S.pieces.length; i++) {
+      var pc = S.pieces[i];
+      if (x < pc.minX || x > pc.maxX || y < pc.minY || y > pc.maxY) continue;
+      if (pointInPoly(x, y, pc.poly)) { hit = pc; break; }
+    }
+    if (!hit || S.doneP[hit.i]) return;
+
+    /* the number can only be chosen from the number list, never by clicking the picture */
+    var g = S.groupByNum[S.selected];
+    if (!g || g.remaining <= 0) {
+      toast('اول یک شماره از فهرست شماره‌ها انتخاب کن.', true);
+      return;
+    }
+    if (hit.num !== S.selected) {
+      popFx(hit, 'denyfx');
+      beep(220, 0.13, 0.07);
+      toast('این قطعه مربوط به شمارهٔ فعال نیست.', true);
+      return;
+    }
+    fillPiece(hit);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (!S.img || S.completed) return;
+    var tag = (e.target && e.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === '+') {
+      select(nextGroup(S.selected)); e.preventDefault();
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === '-') {
+      select(prevGroup(S.selected)); e.preventDefault();
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      var pc = firstOpenPiece(S.selected);
+      if (pc) fillPiece(pc);
+      e.preventDefault();
+    }
+  });
+
+  els.perNumSel.addEventListener('change', function () {
+    S.perNumber = parseInt(els.perNumSel.value, 10) || PER_NUMBER;
+    if (!S.img) return;
+    buildPieces();
+    resetProgress();
+    toast(PIECES + ' قطعه بین ' + S.groups.length + ' شماره پخش شد.');
+  });
+  els.fitSel.addEventListener('change', function () {
+    S.fit = els.fitSel.value;
+    if (!S.img) return;
+    rebuild(true);
+    toast('چیدمان با حالت جدید عکس بازسازی شد.');
+  });
+  els.orderSel.addEventListener('change', function () {
+    S.randomOrder = (els.orderSel.value === 'random');
+    if (!S.img) return;
+    buildPieces();
+    resetProgress();
+    toast(S.randomOrder ? 'شماره‌ها تصادفی پخش شدند — دنبال قطعه‌ها بگرد!' : 'شماره‌ها به ترتیب منظم چیده شدند.');
+  });
+  els.sketchRange.addEventListener('input', function () {
+    S.sketch = parseInt(els.sketchRange.value, 10) / 100;
+    els.sketchVal.textContent = els.sketchRange.value + '%';
+    if (S.img) render('game');
+  });
+  els.numModeSel.addEventListener('change', function () {
+    S.numMode = els.numModeSel.value;
+    render('game');
+  });
+  els.outlineChk.addEventListener('change', function () {
+    S.showOutlines = els.outlineChk.checked;
+    render('game');
+  });
+  els.autoChk.addEventListener('change', function () { S.autoNext = els.autoChk.checked; });
+  els.soundChk.addEventListener('change', function () {
+    S.sound = els.soundChk.checked;
+    if (S.sound) beep(880, 0.08, 0.08);
+  });
+
+  function peekOn(e) {
+    if (!S.img || S.completed) return;
+    if (e) e.preventDefault();
+    S.peek = true;
+    render('preview');
+  }
+  function peekOff() {
+    if (!S.peek) return;
+    S.peek = false;
+    render('game');
+  }
+  els.peek.addEventListener('pointerdown', peekOn);
+  els.peek.addEventListener('pointerup', peekOff);
+  els.peek.addEventListener('pointerleave', peekOff);
+  els.peek.addEventListener('pointercancel', peekOff);
+  window.addEventListener('pointerup', peekOff);
+
+  els.reseed.addEventListener('click', function () {
+    if (!S.img) return;
+    buildPieces();
+    resetProgress();
+    toast('چیدمان تکه‌ها عوض شد.');
+  });
+
+  els.reveal.addEventListener('click', function () {
+    if (!S.img || S.completed) return;
+    for (var i = 0; i < PIECES; i++) S.doneP[i] = true;
+    if (S.progCtx) { S.progCtx.clearRect(0, 0, S.W, S.H); S.progCtx.drawImage(S.work, 0, 0); }
+    for (var q = 0; q < S.groups.length; q++) {
+      S.groups[q].remaining = 0;
+      dropPadButton(S.groups[q].num);
+    }
+    S.selected = S.groups.length ? S.groups[S.groups.length - 1].num : 1;
+    render('game');
+    updatePad();
+    updateHud();
+    updateFx();
+    onWin();
+  });
+
+  els.reset.addEventListener('click', function () {
+    if (!S.img) return;
+    resetProgress();
+    toast('بازی از نو شروع شد.');
+  });
+
+  els.saveState.addEventListener('click', function () {
+    if (!S.img) return;
+    downloadDataURL(exportCurrent(false), 'coloring-progress.png');
+    toast('وضعیت فعلی ذخیره شد.');
+  });
+  els.saveFull.addEventListener('click', function () {
+    if (!S.img) return;
+    try {
+      downloadDataURL(S.work.toDataURL('image/png'), 'coloring-complete.png');
+      toast('تصویر کامل رنگی ذخیره شد.');
+    } catch (e) { toast('ذخیره تصویر ممکن نشد.', true); }
+  });
+
+  els.winNew.addEventListener('click', function () {
+    els.win.hidden = true;
+    els.game.hidden = true;
+    els.uploadPanel.hidden = false;
+    S.img = null;
+    stopTimer();
+  });
+  els.winAgain.addEventListener('click', function () {
+    els.win.hidden = true;
+    resetProgress();
+  });
+  els.winDl.addEventListener('click', function () {
+    try { downloadDataURL(S.work.toDataURL('image/png'), 'coloring-complete.png'); }
+    catch (e) { toast('ذخیره تصویر ممکن نشد.', true); }
+  });
+
+  window.addEventListener('resize', function () { if (S.img) fitBoard(); });
+
+  updateHud();
+})();
+</script>
+</body>
+</html>

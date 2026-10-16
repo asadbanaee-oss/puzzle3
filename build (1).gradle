@@ -1,0 +1,30 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'ir.coloring.puzzle'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "ir.coloring.puzzle"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        // signed with the debug key so `assembleRelease` also gives an
+        // installable APK; replace it with your own keystore for the Play Store
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
